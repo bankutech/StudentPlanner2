@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface-2: #1e1e1e;
+  --surface-3: #252525;
+  --accent: #e8d5a3;
+  --accent-dim: rgba(232, 213, 163, 0.12);
+  --accent-mid: rgba(232, 213, 163, 0.4);
+  --green: #6fcf97;
+  --green-dim: rgba(111, 207, 151, 0.12);
+  --red: #eb5757;
+  --red-dim: rgba(235, 87, 87, 0.12);
+  --blue: #56aef7;
+  --blue-dim: rgba(86, 174, 247, 0.12);
+  --text: #f0ece3;
+  --text-2: #9b9690;
+  --text-3: #5a5753;
+  --border: rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.12);
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font-display: 'DM Serif Display', serif;
+  --font-ui: 'Instrument Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  z-index: 100;
+}
+.sidebar-header {
+  padding: 28px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-sub {
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+.nav-section {
+  padding: 16px 12px 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+.nav-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 8px;
+  margin-bottom: 6px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.nav-item:hover { color: var(--text); background: var(--surface-2); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.level-bar-wrap { margin-top: 8px; }
+.level-bar-bg { height: 3px; background: var(--surface-3); border-radius: 99px; margin-top: 6px; }
+.level-bar-fill { height: 3px; background: var(--accent); border-radius: 99px; width: 35%; transition: width 0.5s; }
+
+/* Main */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.clock {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 300;
+}
+
+.content { padding: 32px; flex: 1; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+}
+.card-sm { padding: 16px 20px; }
+.card-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.card-label {
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+}
+.card-value {
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+/* Grid */
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-2c { grid-template-columns: 220px 1fr; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* Sections */
+.section-view { display: none; }
+.section-view.active { display: block; animation: up 0.25s ease; }
+@keyframes up { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+.btn-primary { background: var(--accent); color: #0d0d0d; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border-2); }
+.btn-ghost:hover { color: var(--text); background: var(--surface-2); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* Form elements */
+input, select, textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+  transition: border 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent-mid); }
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+select option { background: #1e1e1e; }
+label { font-size: 12px; color: var(--text-2); display: block; margin-bottom: 6px; }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+.tag-high { background: var(--red-dim); color: var(--red); }
+.tag-medium { background: rgba(232,213,163,0.12); color: var(--accent); }
+.tag-low { background: var(--green-dim); color: var(--green); }
+.tag-neutral { background: var(--surface-3); color: var(--text-2); }
+
+/* Divider */
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* Progress bar */
+.prog-wrap { background: var(--surface-3); border-radius: 99px; height: 4px; overflow: hidden; }
+.prog-fill { height: 4px; border-radius: 99px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+
+/* Specific Sections */
+
+/* Dashboard */
+.stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.today-class {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.today-class:last-child { border-bottom: none; }
+
+/* Tasks */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  transition: opacity 0.2s;
+}
+.task-item:last-child { border-bottom: none; }
+.task-check {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--border-2);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.task-check.checked { background: var(--accent); border-color: var(--accent); color: #0d0d0d; font-size: 11px; }
+.task-title { flex: 1; font-size: 13px; }
+.task-title.done { text-decoration: line-through; color: var(--text-3); }
+.delete-btn { color: var(--text-3); cursor: pointer; font-size: 16px; padding: 4px; }
+.delete-btn:hover { color: var(--red); }
+
+/* Timer */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 20px 0;
+}
+.timer-ring {
+  position: relative;
+  width: 220px; height: 220px;
+}
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring-bg { fill: none; stroke: var(--surface-3); stroke-width: 6; }
+.timer-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 628;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+.timer-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  margin-top: 4px;
+}
+.timer-presets { display: flex; gap: 8px; }
+
+/* Flashcard */
+.fc-wrap { perspective: 1200px; height: 260px; cursor: pointer; }
+.fc-inner {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.fc-inner.flipped { transform: rotateY(180deg); }
+.fc-face {
+  position: absolute;
+  width: 100%; height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  font-size: 20px;
+}
+.fc-front {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-style: italic;
+}
+.fc-back {
+  transform: rotateY(180deg);
+  background: var(--accent);
+  color: #0d0d0d;
+  font-weight: 600;
+}
+
+/* Timetable */
+.tt-table { width: 100%; border-collapse: separate; border-spacing: 6px; min-width: 700px; }
+.tt-table th {
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  text-align: left;
+}
+.tt-table td {
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.tt-subj { font-weight: 600; font-size: 12px; color: var(--text); }
+.tt-info { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); margin-top: 4px; }
+
+/* GPA */
+.gpa-table { width: 100%; border-collapse: collapse; }
+.gpa-table th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gpa-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.cgpa-display {
+  background: linear-gradient(135deg, var(--accent-dim), transparent);
+  border: 1px solid var(--accent-mid);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Habits */
+.habit-row {
+  display: grid;
+  grid-template-columns: 160px repeat(7, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.habit-row:last-child { border-bottom: none; }
+.habit-dot {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin: 0 auto;
+  display: block;
+}
+.habit-dot.on { background: var(--accent); border-color: var(--accent); }
+
+/* Mood */
+.mood-emoji {
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+.mood-emoji:hover { transform: scale(1.2); }
+
+/* AI Chat */
+.ai-container { display: flex; flex-direction: column; height: 520px; }
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ai-msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
+.ai-msg-bot { background: var(--surface-3); color: var(--text); align-self: flex-start; border-radius: 2px 12px 12px 12px; }
+.ai-msg-user { background: var(--accent); color: #0d0d0d; align-self: flex-end; border-radius: 12px 12px 2px 12px; font-weight: 500; }
+
+/* Progress section */
+.prog-subject-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.prog-subject-item:last-child { border-bottom: none; }
+
+/* Resources */
+.res-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.res-item:last-child { border-bottom: none; }
+
+/* StudyTube */
+.tube-grid { display: grid; grid-template-columns: 240px 1fr 280px; gap: 16px; }
+.yt-video { background: #000; border-radius: var(--radius); overflow: hidden; }
+.yt-video iframe { width: 100%; height: 100%; display: block; }
+.yt-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+  margin-bottom: 6px;
+}
+.yt-item:hover { color: var(--text); border-color: var(--border-2); }
+
+/* Exam items */
+.exam-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.exam-item:last-child { border-bottom: none; }
+.exam-days { font-family: var(--font-mono); font-size: 20px; color: var(--accent); }
+
+/* Inline form rows */
+.form-row { display: grid; gap: 10px; }
+
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mt20 { margin-top: 20px; }
+.text-2 { color: var(--text-2); }
+.text-3 { color: var(--text-3); }
+.mono { font-family: var(--font-mono); }
+.serif { font-family: var(--font-display); font-style: italic; }
+
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .stat-grid { grid-template-columns: repeat(2,1fr); }
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .tube-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-name">
+      <span>StudyOS</span>
+    </div>
+    <div class="brand-sub">Workspace v2</div>
+  </div>
+  <nav class="nav-section" id="nav-list">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" data-section="dashboard"><span class="nav-icon">◈</span> Dashboard</div>
+    <div class="nav-item" data-section="tasks"><span class="nav-icon">✓</span> Tasks</div>
+    <div class="nav-item" data-section="timetable"><span class="nav-icon">⊞</span> Timetable</div>
+
+    <div class="nav-label">Study</div>
+    <div class="nav-item" data-section="focus"><span class="nav-icon">◎</span> Focus Timer</div>
+    <div class="nav-item" data-section="notes"><span class="nav-icon">≡</span> Notes</div>
+    <div class="nav-item" data-section="flashcards"><span class="nav-icon">⬡</span> Flashcards</div>
+    <div class="nav-item" data-section="exams"><span class="nav-icon">◇</span> Exams</div>
+    <div class="nav-item" data-section="studytube"><span class="nav-icon">▶</span> StudyTube</div>
+
+    <div class="nav-label">Track</div>
+    <div class="nav-item" data-section="gpa"><span class="nav-icon">◑</span> GPA Calc</div>
+    <div class="nav-item" data-section="habits"><span class="nav-icon">⊕</span> Habits</div>
+    <div class="nav-item" data-section="progress"><span class="nav-icon">↑</span> Progress</div>
+    <div class="nav-item" data-section="mood"><span class="nav-icon">◔</span> Mood</div>
+    <div class="nav-item" data-section="history"><span class="nav-icon">~</span> History</div>
+
+    <div class="nav-label">Tools</div>
+    <div class="nav-item" data-section="resources"><span class="nav-icon">⊗</span> Resources</div>
+    <div class="nav-item" data-section="ai"><span class="nav-icon">⬡</span> AI Tutor</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="text-3 mono" style="font-size:10px; letter-spacing:1px; text-transform:uppercase;">Level</span>
+      <span class="mono" style="font-size:14px; color:var(--accent); font-weight:400;" id="user-level">1</span>
+    </div>
+    <div class="level-bar-wrap">
+      <div class="level-bar-bg"><div class="level-bar-fill" id="level-fill"></div></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="section-title">Dashboard</div>
+    <div class="topbar-right">
+      <span class="clock" id="system-time">00:00:00</span>
+      <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 14px; font-size:12px; color:var(--text-2);" id="streak-chip">
+        <span id="stat-streak">0</span> day streak
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="section-view active">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="card-label">Open Tasks</div>
+          <div class="card-value" id="stat-tasks">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">Focus Hours</div>
+          <div class="card-value" id="stat-focus">0.0</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">Avg CGPA</div>
+          <div class="card-value" id="stat-cgpa">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">Flashcards</div>
+          <div class="card-value" id="stat-cards">0</div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="grid-template-columns: 1fr 340px;">
+        <div class="card">
+          <div class="card-title">Today's Classes</div>
+          <div id="today-classes"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Subject Coverage</div>
+          <div id="subject-progress-list" class="stack mt8"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks -->
+    <section id="tasks" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns: 340px 1fr;">
+        <div class="card">
+          <div class="card-title">New Task</div>
+          <div class="stack">
+            <div>
+              <label>Description</label>
+              <input type="text" id="task-input" placeholder="What needs to be done?">
+            </div>
+            <div class="grid grid-2" style="gap:8px;">
+              <div>
+                <label>Priority</label>
+                <select id="task-priority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div>
+                <label>Subject</label>
+                <select id="task-tag">
+                  <option>DAA</option><option>DBMS</option><option>AI</option><option>Math</option><option>Misc</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="add-task-btn">Add Task</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Queue</div>
+          <div id="task-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timetable -->
+    <section id="timetable" class="section-view">
+      <div class="card" style="overflow-x:auto;">
+        <div class="card-title">Weekly Schedule</div>
+        <table class="tt-table" id="timetable-grid">
+          <thead>
+            <tr>
+              <th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+            </tr>
+          </thead>
+          <tbody id="timetable-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Focus Timer -->
+    <section id="focus" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:1fr 300px;">
+        <div class="card" style="display:flex; flex-direction:column; align-items:center;">
+          <div class="card-title" style="align-self:flex-start;">Pomodoro Studio</div>
+          <div class="timer-wrap">
+            <div class="timer-ring">
+              <svg width="220" height="220" viewBox="0 0 220 220">
+                <circle class="timer-ring-bg" cx="110" cy="110" r="100"/>
+                <circle class="timer-ring-fill" id="timer-arc" cx="110" cy="110" r="100"/>
+              </svg>
+              <div class="timer-center">
+                <div class="timer-display" id="timer-display">25:00</div>
+                <div class="timer-label" id="timer-mode-label">Focus</div>
+              </div>
+            </div>
+            <div class="timer-presets">
+              <button class="btn btn-ghost btn-sm" onclick="setTimer(25)">25m</button>
+              <button class="btn btn-ghost btn-sm" onclick="setTimer(45)">45m</button>
+              <button class="btn btn-ghost btn-sm" onclick="setTimer(60)">60m</button>
+              <button class="btn btn-ghost btn-sm" onclick="setTimer(90)">90m</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-primary" id="timer-toggle">Start</button>
+              <button class="btn btn-ghost" id="timer-reset">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="card stack">
+          <div class="card-title">Sessions Today</div>
+          <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); font-weight:300;" id="today-sessions">0</div>
+          <hr class="divider">
+          <div class="card-label">Total Focus</div>
+          <div style="font-size:20px; color:var(--text);" id="focus-total">0.0 hrs</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notes -->
+    <section id="notes" class="section-view">
+      <div class="grid" style="grid-template-columns:180px 1fr; gap:16px;">
+        <div class="card card-sm">
+          <div class="card-title" style="font-size:14px;">Subjects</div>
+          <div id="note-subjects-list" class="stack" style="gap:4px;"></div>
+        </div>
+        <div class="card" style="display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div class="card-title" style="margin-bottom:0;" id="current-note-title">Select a Subject</div>
+            <button class="btn btn-primary btn-sm" id="save-note-btn">Save</button>
+          </div>
+          <textarea id="note-editor" style="flex:1; min-height:460px; border:none; background:transparent; font-size:14px; line-height:1.8; resize:none;" placeholder="Start writing..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flashcards -->
+    <section id="flashcards" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack">
+          <div class="card-title">New Card</div>
+          <div>
+            <label>Question</label>
+            <input type="text" id="fc-q" placeholder="Enter question">
+          </div>
+          <div>
+            <label>Answer</label>
+            <input type="text" id="fc-a" placeholder="Enter answer">
+          </div>
+          <button class="btn btn-primary" id="add-fc-btn">Add Card</button>
+          <hr class="divider">
+          <div class="card-label">Total Cards</div>
+          <div style="font-family:var(--font-mono); font-size:24px; color:var(--accent);" id="fc-count">0</div>
+        </div>
+        <div class="card stack" style="align-items:center;">
+          <div class="fc-wrap" id="fc-viewer" style="width:100%; max-width:460px;">
+            <div class="fc-inner" id="fc-inner">
+              <div class="fc-face fc-front">
+                <p id="fc-front-text" style="color:var(--text-2);">Add cards and press shuffle to begin</p>
+              </div>
+              <div class="fc-face fc-back">
+                <p id="fc-back-text">Answer</p>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button class="btn btn-ghost btn-sm" id="prev-fc-btn">← Prev</button>
+            <button class="btn btn-primary btn-sm" id="shuffle-fc-btn">Shuffle</button>
+            <button class="btn btn-ghost btn-sm" id="next-fc-btn">Next →</button>
+          </div>
+          <p class="text-3 mono" style="font-size:11px;" id="fc-counter">0 / 0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Exams -->
+    <section id="exams" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack">
+          <div class="card-title">Log Deadline</div>
+          <div>
+            <label>Exam Name</label>
+            <input type="text" id="exam-name" placeholder="e.g. DAA Mid-term">
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="exam-date">
+          </div>
+          <button class="btn btn-primary" id="add-exam-btn">Set Deadline</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Upcoming Deadlines</div>
+          <div id="exam-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GPA -->
+    <section id="gpa" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack">
+          <div class="card-title">Log Grade</div>
+          <div>
+            <label>Subject</label>
+            <input type="text" id="gpa-subject" placeholder="e.g. Design & Analysis">
+          </div>
+          <div>
+            <label>Grade</label>
+            <select id="gpa-grade">
+              <option value="10">O — Outstanding (10)</option>
+              <option value="9">A+ (9)</option>
+              <option value="8">A (8)</option>
+              <option value="7">B+ (7)</option>
+              <option value="6">B (6)</option>
+              <option value="5">C (5)</option>
+            </select>
+          </div>
+          <div>
+            <label>Credits</label>
+            <input type="number" id="gpa-credits" placeholder="e.g. 4" min="1" max="6">
+          </div>
+          <button class="btn btn-primary" id="add-gpa-btn">Log Grade</button>
+        </div>
+        <div class="card">
+          <div class="card-title">CGPA Breakdown</div>
+          <table class="gpa-table">
+            <thead>
+              <tr><th>Subject</th><th>Grade</th><th>Credits</th><th></th></tr>
+            </thead>
+            <tbody id="gpa-body"></tbody>
+          </table>
+          <div class="cgpa-display">
+            <span style="font-family:var(--font-display); font-size:14px; font-style:italic; color:var(--text-2);">Current CGPA</span>
+            <span style="font-family:var(--font-mono); font-size:36px; color:var(--accent); font-weight:300;" id="cgpa-val">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Habits -->
+    <section id="habits" class="section-view">
+      <div class="card">
+        <div class="card-title">Consistency Tracker</div>
+        <div style="display:grid; grid-template-columns:160px repeat(7,1fr); gap:8px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);">
+          <span class="text-3 mono" style="font-size:10px; letter-spacing:1px; text-transform:uppercase;">Habit</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">M</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">T</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">W</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">T</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">F</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">S</span>
+          <span class="text-3 mono" style="font-size:10px; text-align:center;">S</span>
+        </div>
+        <div id="habits-container"></div>
+      </div>
+    </section>
+
+    <!-- Progress -->
+    <section id="progress" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack">
+          <div class="card-title">Update Coverage</div>
+          <div>
+            <label>Subject</label>
+            <select id="prog-subject"></select>
+          </div>
+          <div>
+            <label>Progress — <span id="prog-num">50</span>%</label>
+            <input type="range" id="prog-val" min="0" max="100" value="50" style="width:100%;">
+          </div>
+          <button class="btn btn-primary" id="save-prog-btn">Update</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Detailed View</div>
+          <div id="prog-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resources -->
+    <section id="resources" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack">
+          <div class="card-title">Add Resource</div>
+          <div>
+            <label>Title</label>
+            <input type="text" id="res-title" placeholder="e.g. MIT OCW DAA">
+          </div>
+          <div>
+            <label>URL</label>
+            <input type="text" id="res-url" placeholder="https://...">
+          </div>
+          <div>
+            <label>Subject</label>
+            <select id="res-tag"></select>
+          </div>
+          <button class="btn btn-primary" id="add-res-btn">Save</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Study Vault</div>
+          <div id="resource-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Tutor -->
+    <section id="ai" class="section-view">
+      <div class="card ai-container">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div class="card-title" style="margin-bottom:0;">AI Tutor</div>
+          <input type="password" id="ai-key" placeholder="Claude API Key" style="width:220px; font-size:12px; font-family:var(--font-mono);">
+        </div>
+        <div class="ai-messages" id="ai-chat">
+          <div class="ai-msg ai-msg-bot">Hi! I'm your StudyOS AI tutor. Enter your Claude API key and ask me anything about DAA, DBMS, AI, or Mathematics.</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr auto; gap:8px;">
+          <input type="text" id="ai-input" placeholder="Ask anything...">
+          <button class="btn btn-primary" id="ai-send-btn">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mood -->
+    <section id="mood" class="section-view">
+      <div class="grid grid-2" style="grid-template-columns:300px 1fr;">
+        <div class="card stack" style="align-items:center; text-align:center;">
+          <div class="card-title">Daily Mood</div>
+          <div style="display:flex; gap:16px; margin:8px 0;">
+            <span class="mood-emoji" data-mood="5">🤩</span>
+            <span class="mood-emoji" data-mood="4">😊</span>
+            <span class="mood-emoji" data-mood="3">😐</span>
+            <span class="mood-emoji" data-mood="2">😔</span>
+            <span class="mood-emoji" data-mood="1">😫</span>
+          </div>
+          <p class="text-3" style="font-size:12px;">Tap to log your mood</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Mood History</div>
+          <canvas id="moodChart" style="max-height:260px;"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section id="history" class="section-view">
+      <div class="card">
+        <div class="card-title">Focus Pulse — Weekly</div>
+        <canvas id="focusChart" style="max-height:360px;"></canvas>
+      </div>
+    </section>
+
+    <!-- StudyTube -->
+    <section id="studytube" class="section-view">
+      <div class="tube-grid" style="height:520px;">
+        <div class="card stack" style="overflow:hidden;">
+          <div class="card-title">Library</div>
+          <div style="display:grid; gap:6px;">
+            <input type="text" id="yt-url" placeholder="YouTube URL">
+            <button class="btn btn-primary btn-sm" id="add-yt-btn">Add</button>
+          </div>
+          <div id="yt-items" style="overflow-y:auto; flex:1;"></div>
+        </div>
+        <div class="yt-video" style="height:100%;">
+          <iframe id="video-frame" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe>
+        </div>
+        <div class="card stack">
+          <div class="card-title">Watch Notes</div>
+          <textarea id="yt-notes" style="flex:1; border:none; background:transparent; font-size:13px; line-height:1.7; resize:none;" placeholder="Jot down insights while you watch..."></textarea>
+          <button class="btn btn-primary btn-sm" id="save-yt-notes">Save Notes</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const DEFAULT = {
+  tasks: [], subjects: ["DAA", "DBMS", "Artificial Intelligence", "Mathematics"],
+  notes: {}, flashcards: [], exams: [], grades: [],
+  habits: ["Morning Revision", "Problem Solving", "Exercise", "No Phone Study"],
+  habitLogs: {}, progress: { DAA: 0, DBMS: 0, "Artificial Intelligence": 0, Mathematics: 0 },
+  resources: [], moods: [], pomodoros: [], studyTube: [],
+  currentVideoId: null, xp: 0
+};
+let state = (() => { try { return JSON.parse(localStorage.getItem('studyOS_v2')) || DEFAULT; } catch(e) { return DEFAULT; }})();
+let moodChart, focusChart;
+
+function save() { localStorage.setItem('studyOS_v2', JSON.stringify(state)); updateStats(); }
+
+// Router
+document.getElementById('nav-list').addEventListener('click', e => {
+  const item = e.target.closest('.nav-item');
+  if (!item) return;
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  const id = item.dataset.section;
+  document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('section-title').textContent = item.textContent.trim().replace(/[◈✓⊞◎≡⬡◇▶◑⊕↑◔~⊗]/g,'').trim();
+  if (id === 'mood') renderMoodChart();
+  if (id === 'history') renderFocusChart();
+});
+
+// Clock
+setInterval(() => { document.getElementById('system-time').textContent = new Date().toLocaleTimeString(); }, 1000);
+
+// Stats
+function updateStats() {
+  const open = state.tasks.filter(t => !t.done).length;
+  document.getElementById('stat-tasks').textContent = open;
+  const hrs = (state.pomodoros.reduce((a,b) => a+b.duration, 0) / 3600).toFixed(1);
+  document.getElementById('stat-focus').textContent = hrs;
+  document.getElementById('focus-total').textContent = hrs + ' hrs';
+  document.getElementById('stat-cards').textContent = state.flashcards.length;
+  const lv = Math.floor(Math.sqrt(state.xp / 100)) + 1;
+  document.getElementById('user-level').textContent = lv;
+  const xpInLevel = state.xp - Math.pow(lv-1, 2)*100;
+  const xpNext = Math.pow(lv, 2)*100 - Math.pow(lv-1, 2)*100;
+  document.getElementById('level-fill').style.width = Math.min(100, (xpInLevel/xpNext)*100) + '%';
+
+  let totalPts=0, totalCr=0;
+  state.grades.forEach(g => { totalPts += Number(g.val)*Number(g.credits); totalCr += Number(g.credits); });
+  const cgpa = totalCr ? (totalPts/totalCr).toFixed(2) : '—';
+  document.getElementById('stat-cgpa').textContent = cgpa;
+
+  renderDashboardClasses();
+  renderSubjectProgress();
+}
+
+function renderDashboardClasses() {
+  const day = new Date().getDay();
+  const el = document.getElementById('today-classes');
+  if (!day || day === 6) { el.innerHTML = '<p class="text-2" style="font-size:13px; padding:16px 0;">No classes today — great day for self-study.</p>'; return; }
+  el.innerHTML = state.subjects.map((s, i) => `
+    <div class="today-class">
+      <div>
+        <div style="font-weight:600; font-size:13px;">${s}</div>
+        <div class="mono text-3" style="font-size:11px; margin-top:2px;">0${i+8}:00 – 0${i+9}:00 · Room 30${i+1}</div>
+      </div>
+      <span class="tag tag-neutral">Upcoming</span>
+    </div>
+  `).join('');
+}
+
+function renderSubjectProgress() {
+  const el = document.getElementById('subject-progress-list');
+  el.innerHTML = Object.entries(state.progress).map(([name, val]) => `
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; justify-content:space-between; font-size:12px;">
+        <span class="text-2">${name}</span>
+        <span class="mono text-3">${val}%</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${val}%; background:var(--accent);"></div></div>
+    </div>
+  `).join('');
+}
+
+// Tasks
+document.getElementById('add-task-btn').addEventListener('click', () => {
+  const title = document.getElementById('task-input').value.trim();
+  if (!title) return;
+  state.tasks.unshift({ id: Date.now(), title, priority: document.getElementById('task-priority').value, tag: document.getElementById('task-tag').value, done: false });
+  state.xp += 10;
+  document.getElementById('task-input').value = '';
+  save(); renderTasks();
+});
+function renderTasks() {
+  const el = document.getElementById('task-list');
+  if (!state.tasks.length) { el.innerHTML = '<p class="text-3" style="padding:20px 0; font-size:13px;">No tasks yet. Add your first task.</p>'; return; }
+  el.innerHTML = state.tasks.map(t => `
+    <div class="task-item" style="opacity:${t.done?0.45:1}">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="task-title ${t.done?'done':''}">${t.title}</div>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <span class="tag tag-${t.priority}">${t.priority}</span>
+          <span class="tag tag-neutral">${t.tag}</span>
+        </div>
+      </div>
+      <span class="delete-btn" onclick="deleteTask(${t.id})">×</span>
+    </div>
+  `).join('');
+}
+window.toggleTask = id => {
+  const t = state.tasks.find(x => x.id===id);
+  t.done = !t.done;
+  if(t.done) state.xp += 50;
+  save(); renderTasks();
+};
+window.deleteTask = id => { state.tasks = state.tasks.filter(x => x.id!==id); save(); renderTasks(); };
+
+// Timetable
+function renderTimetable() {
+  const times = ["09:00","10:00","11:00","13:00","14:00"];
+  document.getElementById('timetable-body').innerHTML = times.map((t,i) => `
+    <tr>
+      <td><span class="mono text-3" style="font-size:11px;">${t}</span></td>
+      ${[0,1,2,3,4].map(d => {
+        const s = state.subjects[(i+d) % state.subjects.length];
+        return `<td><div class="tt-subj">${s}</div><div class="tt-info">Room 30${d+1}</div></td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+// Timer
+let timerInt, timeLeft = 25*60, timerTotal = 25*60, isRunning = false, todaySessions = 0;
+const ARC = 2*Math.PI*100;
+function setTimer(m) {
+  clearInterval(timerInt); isRunning = false;
+  timeLeft = timerTotal = m*60;
+  updateTimerDisplay();
+  document.getElementById('timer-toggle').textContent = 'Start';
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft/60), s = timeLeft%60;
+  document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const offset = ARC * (1 - timeLeft/timerTotal);
+  document.getElementById('timer-arc').style.strokeDashoffset = offset;
+}
+document.getElementById('timer-toggle').addEventListener('click', () => {
+  if (isRunning) {
+    clearInterval(timerInt);
+    document.getElementById('timer-toggle').textContent = 'Resume';
+  } else {
+    timerInt = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInt); isRunning = false;
+        state.pomodoros.push({ date: new Date().toISOString(), duration: timerTotal });
+        state.xp += 250;
+        todaySessions++;
+        document.getElementById('today-sessions').textContent = todaySessions;
+        save();
+        document.getElementById('timer-toggle').textContent = 'Start';
+        setTimer(timerTotal/60);
+        alert('Session complete! Great work.');
+        return;
+      }
+    }, 1000);
+    document.getElementById('timer-toggle').textContent = 'Pause';
+  }
+  isRunning = !isRunning;
+});
+document.getElementById('timer-reset').addEventListener('click', () => setTimer(timerTotal/60));
+
+// Notes
+function initNotes() {
+  const el = document.getElementById('note-subjects-list');
+  el.innerHTML = state.subjects.map(s => `
+    <div class="nav-item" style="font-size:12px;" onclick="loadNote('${s}')">${s}</div>
+  `).join('');
+}
+window.loadNote = s => {
+  document.getElementById('current-note-title').textContent = s;
+  document.getElementById('note-editor').value = state.notes[s] || '';
+  document.querySelectorAll('#note-subjects-list .nav-item').forEach(i => i.classList.toggle('active', i.textContent.trim()===s));
+};
+document.getElementById('save-note-btn').addEventListener('click', () => {
+  const s = document.getElementById('current-note-title').textContent;
+  if (s === 'Select a Subject') return;
+  state.notes[s] = document.getElementById('note-editor').value;
+  state.xp += 20; save();
+});
+
+// Flashcards
+let fcIdx = 0;
+document.getElementById('add-fc-btn').addEventListener('click', () => {
+  const q = document.getElementById('fc-q').value.trim(), a = document.getElementById('fc-a').value.trim();
+  if(!q||!a) return;
+  state.flashcards.push({q,a});
+  save(); renderFcCount();
+  document.getElementById('fc-q').value = '';
+  document.getElementById('fc-a').value = '';
+});
+function renderFcCount() {
+  document.getElementById('fc-count').textContent = state.flashcards.length;
+  document.getElementById('fc-counter').textContent = `${state.flashcards.length > 0 ? fcIdx+1 : 0} / ${state.flashcards.length}`;
+}
+document.getElementById('fc-viewer').addEventListener('click', () => { document.getElementById('fc-inner').classList.toggle('flipped'); });
+window.showFc = () => {
+  if(!state.flashcards.length) return;
+  const c = state.flashcards[fcIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent = c.a;
+  document.getElementById('fc-inner').classList.remove('flipped');
+  renderFcCount();
+};
+document.getElementById('shuffle-fc-btn').addEventListener('click', () => { fcIdx = Math.floor(Math.random()*state.flashcards.length); showFc(); });
+document.getElementById('next-fc-btn').addEventListener('click', () => { if(state.flashcards.length) { fcIdx = (fcIdx+1)%state.flashcards.length; showFc(); } });
+document.getElementById('prev-fc-btn').addEventListener('click', () => { if(state.flashcards.length) { fcIdx = (fcIdx-1+state.flashcards.length)%state.flashcards.length; showFc(); } });
+
+// Exams
+function renderExams() {
+  const el = document.getElementById('exam-list');
+  if (!state.exams.length) { el.innerHTML = '<p class="text-3" style="font-size:13px; padding:16px 0;">No exams logged.</p>'; return; }
+  el.innerHTML = state.exams.map((e,i) => {
+    const diff = new Date(e.date) - new Date();
+    const days = Math.ceil(diff/(1000*60*60*24));
+    return `<div class="exam-item">
+      <div>
+        <div style="font-weight:600; font-size:14px;">${e.name}</div>
+        <div class="mono text-3" style="font-size:11px; margin-top:2px;">${e.date}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="exam-days">${days > 0 ? days+'d' : 'Today'}</span>
+        <span class="delete-btn" onclick="deleteExam(${i})">×</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('add-exam-btn').addEventListener('click', () => {
+  const n = document.getElementById('exam-name').value.trim(), d = document.getElementById('exam-date').value;
+  if(!n||!d) return;
+  state.exams.push({name:n, date:d}); save(); renderExams();
+  document.getElementById('exam-name').value = '';
+});
+window.deleteExam = i => { state.exams.splice(i,1); save(); renderExams(); };
+
+// GPA
+function renderGPA() {
+  const body = document.getElementById('gpa-body');
+  body.innerHTML = state.grades.map((g,i) => `
+    <tr>
+      <td>${g.name}</td>
+      <td><span class="mono" style="color:var(--accent);">${g.val}</span></td>
+      <td>${g.credits}</td>
+      <td><span class="delete-btn" onclick="deleteGrade(${i})">×</span></td>
+    </tr>
+  `).join('');
+  let tp=0, tc=0;
+  state.grades.forEach(g => { tp += Number(g.val)*Number(g.credits); tc += Number(g.credits); });
+  const c = tc ? (tp/tc).toFixed(2) : '—';
+  document.getElementById('cgpa-val').textContent = c;
+}
+document.getElementById('add-gpa-btn').addEventListener('click', () => {
+  const n = document.getElementById('gpa-subject').value.trim(), v = document.getElementById('gpa-grade').value, cr = document.getElementById('gpa-credits').value;
+  if(!n||!cr) return;
+  state.grades.push({name:n, val:v, credits:cr}); save(); renderGPA();
+  document.getElementById('gpa-subject').value = ''; document.getElementById('gpa-credits').value = '';
+});
+window.deleteGrade = i => { state.grades.splice(i,1); save(); renderGPA(); };
+
+// Habits
+function renderHabits() {
+  const today = new Date().toISOString().split('T')[0];
+  if (!state.habitLogs[today]) state.habitLogs[today] = {};
+  document.getElementById('habits-container').innerHTML = state.habits.map((h,hi) => `
+    <div class="habit-row">
+      <span style="font-size:13px; color:var(--text-2);">${h}</span>
+      ${[0,1,2,3,4,5,6].map(d => `<div><div class="habit-dot ${d===0&&state.habitLogs[today]?.[hi]?'on':''}" onclick="toggleHabit(${hi}, ${d})"></div></div>`).join('')}
+    </div>
+  `).join('');
+}
+window.toggleHabit = (hi) => {
+  const today = new Date().toISOString().split('T')[0];
+  if(!state.habitLogs[today]) state.habitLogs[today] = {};
+  state.habitLogs[today][hi] = !state.habitLogs[today][hi];
+  if(state.habitLogs[today][hi]) state.xp += 50;
+  save(); renderHabits();
+};
+
+// Progress
+function initProgress() {
+  const el = document.getElementById('prog-subject');
+  el.innerHTML = state.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+  renderDetailedProgress();
+}
+document.getElementById('prog-val').addEventListener('input', e => { document.getElementById('prog-num').textContent = e.target.value; });
+document.getElementById('save-prog-btn').addEventListener('click', () => {
+  const s = document.getElementById('prog-subject').value;
+  state.progress[s] = document.getElementById('prog-val').value;
+  state.xp += 30; save(); renderDetailedProgress(); updateStats();
+});
+function renderDetailedProgress() {
+  document.getElementById('prog-list').innerHTML = Object.entries(state.progress).map(([n,v]) => `
+    <div class="prog-subject-item">
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; margin-bottom:8px;">${n}</div>
+        <div class="prog-wrap"><div class="prog-fill" style="width:${v}%; background:var(--accent);"></div></div>
+      </div>
+      <span class="mono text-3" style="font-size:11px; margin-left:16px; flex-shrink:0;">${v}%</span>
+    </div>
+  `).join('');
+}
+
+// Resources
+function renderResources() {
+  const el = document.getElementById('resource-list');
+  if(!state.resources.length) { el.innerHTML = '<p class="text-3" style="font-size:13px; padding:16px 0;">No resources saved yet.</p>'; return; }
+  el.innerHTML = state.resources.map((r,i) => `
+    <div class="res-item">
+      <a href="${r.url}" target="_blank" style="color:var(--text); text-decoration:none; font-size:13px; font-weight:500;">${r.title}</a>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="tag tag-neutral">${r.tag}</span>
+        <span class="delete-btn" onclick="deleteRes(${i})">×</span>
+      </div>
+    </div>
+  `).join('');
+}
+document.getElementById('add-res-btn').addEventListener('click', () => {
+  const t = document.getElementById('res-title').value.trim(), u = document.getElementById('res-url').value.trim(), g = document.getElementById('res-tag').value;
+  if(!t||!u) return;
+  state.resources.push({title:t, url:u, tag:g}); save(); renderResources();
+  document.getElementById('res-title').value=''; document.getElementById('res-url').value='';
+});
+window.deleteRes = i => { state.resources.splice(i,1); save(); renderResources(); };
+
+// AI Tutor
+document.getElementById('ai-send-btn').addEventListener('click', async () => {
+  const input = document.getElementById('ai-input').value.trim();
+  const key = document.getElementById('ai-key').value.trim();
+  if(!input||!key) return;
+  const chat = document.getElementById('ai-chat');
+  chat.innerHTML += `<div class="ai-msg ai-msg-user">${input}</div>`;
+  document.getElementById('ai-input').value = '';
+  chat.scrollTop = chat.scrollHeight;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1024,
+        system:'You are a helpful AI tutor for a B.Tech CSE student. Subjects: DAA, DBMS, AI, Mathematics. Be concise and educational.',
+        messages:[{role:'user', content:input}]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'No response.';
+    chat.innerHTML += `<div class="ai-msg ai-msg-bot">${reply}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+  } catch(e) {
+    chat.innerHTML += `<div class="ai-msg ai-msg-bot" style="border:1px solid var(--red-dim); color:var(--red);">Error: ${e.message}</div>`;
+  }
+});
+document.getElementById('ai-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('ai-send-btn').click(); });
+
+// Mood
+function renderMoodChart() {
+  const ctx = document.getElementById('moodChart').getContext('2d');
+  if(moodChart) moodChart.destroy();
+  const last7 = state.moods.slice(-7);
+  moodChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: last7.map(m => m.date),
+      datasets:[{label:'Mood', data:last7.map(m=>m.val), borderColor:'#e8d5a3', tension:0.4, fill:true, backgroundColor:'rgba(232,213,163,0.06)', pointBackgroundColor:'#e8d5a3'}]
+    },
+    options:{
+      scales:{
+        y:{min:1,max:5, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#5a5753'}},
+        x:{grid:{display:false}, ticks:{color:'#5a5753'}}
+      },
+      plugins:{legend:{display:false}},
+      elements:{point:{radius:4}}
+    }
+  });
+}
+document.querySelectorAll('.mood-emoji').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.moods.push({date:new Date().toLocaleDateString(), val:Number(btn.dataset.mood)});
+    save(); renderMoodChart();
+  });
+});
+
+// Focus chart
+function renderFocusChart() {
+  const ctx = document.getElementById('focusChart').getContext('2d');
+  if(focusChart) focusChart.destroy();
+  focusChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{label:'Focus (min)', data:[120,90,200,150,45,0,0], backgroundColor:'rgba(232,213,163,0.3)', borderColor:'rgba(232,213,163,0.7)', borderWidth:1, borderRadius:4}]
+    },
+    options:{
+      scales:{
+        y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#5a5753'}},
+        x:{grid:{display:false}, ticks:{color:'#5a5753'}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+// StudyTube
+document.getElementById('add-yt-btn').addEventListener('click', () => {
+  const url = document.getElementById('yt-url').value;
+  const match = url.match(/(?:v=|youtu\.be\/)([^&\s]{11})/);
+  if(!match) return alert('Invalid YouTube URL');
+  const id = match[1];
+  state.studyTube.push({id, title:`Video ${state.studyTube.length+1}`, notes:''});
+  save(); renderTubeList();
+  document.getElementById('yt-url').value = '';
+});
+function renderTubeList() {
+  document.getElementById('yt-items').innerHTML = state.studyTube.map(v => `<div class="yt-item" onclick="playVideo('${v.id}')">${v.title}</div>`).join('');
+}
+window.playVideo = id => {
+  state.currentVideoId = id;
+  document.getElementById('video-frame').src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+  const v = state.studyTube.find(x=>x.id===id);
+  document.getElementById('yt-notes').value = v.notes||'';
+};
+document.getElementById('save-yt-notes').addEventListener('click', () => {
+  if(!state.currentVideoId) return;
+  state.studyTube.find(v=>v.id===state.currentVideoId).notes = document.getElementById('yt-notes').value;
+  save();
+});
+
+// Init
+function init() {
+  renderTasks(); renderTimetable(); updateStats(); initNotes();
+  renderExams(); renderGPA(); renderHabits(); initProgress();
+  renderResources(); renderTubeList(); renderFcCount();
+  const tags = document.getElementById('res-tag');
+  tags.innerHTML = state.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+  updateTimerDisplay();
+}
+init();
+</script>
+</body>
+</html>
