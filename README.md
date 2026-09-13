@@ -1,5 +1,6 @@
-# Student Planner React
+# StudentPlanner2
 
+## Overview
 A comprehensive student planner application built with React + Vite. This application helps students manage their studies, plan their time efficiently, track progress, and utilize AI-powered features for a better learning experience. 
 
 ## Features
@@ -64,3 +65,9 @@ npm run preview
 ## License
 
 ISC
+
+## Getting Started
+Please refer to the source files for specific installation and usage instructions. Ensure that your local environment meets the standard requirements for the associated technologies.
+
+## Project Structure
+This project is organized into standard directories. Key configuration files and primary source code are located in the root directory.
